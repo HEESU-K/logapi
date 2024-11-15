@@ -6,24 +6,13 @@ from config import Config
 
 api_blueprint = Blueprint('api', __name__)
 
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = request.args.get("token")
-        if not token or token != Config.API_TOKEN:
-            return jsonify({"message": "Token is missing or invalid!"}), 403
-        return f(*args, **kwargs)
-    return decorated
-
 @api_blueprint.route('/logs', methods=['POST'])
-@token_required
 def log():
     data = request.json
     log_message(data["level"], data["message"], data.get("source", "default"))
     return jsonify({"status": "Log saved"}), 201
 
 @api_blueprint.route('/logs/filter', methods=['GET'])
-@token_required
 def logs_filter():
     level = request.args.get('level')
     keyword = request.args.get('keyword')
@@ -33,7 +22,6 @@ def logs_filter():
     return jsonify(filtered_logs)
 
 @api_blueprint.route('/logs/stats', methods=['GET'])
-@token_required
 def logs_stats():
     freq_data = analyze_log_frequency()
     error_data = analyze_error_ratio()
