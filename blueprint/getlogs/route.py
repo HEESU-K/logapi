@@ -6,12 +6,12 @@ import sqlite3
 
 getlogs_bp = Blueprint('getlogs', __name__, url_prefix='/getlogs')
 
-@getlogs_bp.route('/writedb', method=['GET'])
+@getlogs_bp.route('/writedb')
 def insert_db():
     conn = sqlite3.connect(Config.DB_PATH)
     cursor = conn.cursor()
 
-    with open('../../log.txt', 'r') as log:
+    with open('log.txt', 'r') as log:
         content = log.readlines()
 
     for line in content:
@@ -38,7 +38,7 @@ def insert_db():
 
 
 # 로그 전체 검색
-@getlogs_bp.route('/', methods=['GET'])
+@getlogs_bp.route('/')
 def get_logs():
     status_code = request.args.get('status_code')
     ip_address = request.args.get('ip_address')

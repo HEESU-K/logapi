@@ -6,7 +6,7 @@ from datetime import datetime
 import sqlite3
 import pandas as pd
 
-viewlogs_bp = Blueprint('viewlogs', __name__, url_prefix='viewlogs')
+viewlogs_bp = Blueprint('viewlogs', __name__, url_prefix='/viewlogs')
 
 # 일자별 로그 발생 빈도 분석 및 시각화
 @viewlogs_bp.route('/')
