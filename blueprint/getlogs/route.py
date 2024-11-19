@@ -28,6 +28,32 @@ def insert_db():
     conn.commit()
     conn.close()
 
+# error log DB에 저장
+@getlogs_bp.route('/writedb_error')
+def insert_db_error():
+    conn = sqlite3.connect(Config.DB_PATH)
+    cursor = conn.cursor()
+
+    with open('../../log.txt', 'r') as log:
+        content = log.readlines()
+
+    for line in content:
+        timestamp = line[1:27]
+        error_level = line[32:line.index(']', 32)]
+        client_ip_start = line.index("[client ") + len("[client ")
+        client_ip_end = line.index("]", client_ip_start)
+        client_ip = line[client_ip_start:client_ip_end]
+        message = line[client_ip_end + 2:]
+
+        query = "INSERT INTO error_log (timestamp, error_level, client_ip, error_message) VALUES (?, ?, ?, ?)"
+
+        cursor.execute(query, (timestamp, error_level, client_ip, message)
+        )
+
+    conn.commit()
+    conn.close()
+
+
 '''
 로그 검색 및 필터링
 - 날짜/시간 |  키워드, 오류 메시지  |  ERROR 레벨의 로그 중 특정 ip  |  특정 범위 지정
@@ -46,6 +72,48 @@ def get_logs():
     conn = sqlite3.connect(Config.DB_PATH)
     cursor = conn.cursor()
 
+    query = "SELECT id, ip_address, timestamp, http_method, url, protocol, status_code, response_size FROM access_log"
+    conditions = []
+    params = []
+
+    if status_code:
+        conditions.append("status_code = ?")
+        params.append(status_code)
+    if ip_address:
+        conditions.append("ip_address = ?")
+        params.append(ip_address)
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    cursor.execute(query, params)
+    logs = cursor.fetchall()
+
+    log_list = [
+        {
+            "id": log[0],
+            "ip_address": log[1],
+            "timestamp": log[2],
+            "http_method": log[3],
+            "url": log[4],
+            "protocol": log[5],
+            "status_code": log[6],
+            "response_size": log[7],
+        }
+        for log in logs
+    ]
+    conn.close()
+    return log_list
+
+
+@getlogs_bp.route('/filter')
+def get_logs_filter():
+    status_code = request.args.get('status_code')
+    ip_address = request.args.get('ip_address')
+
+    conn = sqlite3.connect(Config.DB_PATH)
+    cursor = conn.cursor()
+    
     query = "SELECT id, ip_address, timestamp, http_method, url, protocol, status_code, response_size FROM access_log"
     conditions = []
     params = []
