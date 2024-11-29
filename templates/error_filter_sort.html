@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Log Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    
+
+    <!-- Plotly 그래프 -->
+    {% if graph_json %}
+    <div id="plotly-chart" style="width: 80%; margin: 20px auto;"></div>
+    <script>
+        var graphData = {{ graph_json | safe }};
+        Plotly.newPlot('plotly-chart', graphData);
+    </script>
+    {% endif %}
+</body>
+</html>
